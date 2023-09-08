@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>RestrictedArea.qml</file>
+        <file>Point.qml</file>
+        <file>Line.qml</file>
+    </qresource>
+    <qresource prefix="/img"/>
+</RCC>
