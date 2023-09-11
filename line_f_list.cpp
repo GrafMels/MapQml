@@ -16,7 +16,11 @@ void LineFList::setLineList(const QList<QLineF*> lineList){
 }
 
 QLineF* LineFList::getLastLineList(){
-    return this->_lineList.at(0);
+    return this->_lineList.at(_lineList.length()-1);
+}
+
+QLineF* LineFList::getFirstLineList(){
+    return this->_lineList[0];
 }
 
 void LineFList::addNewLine(QPointF pointStart, QPointF pointEnd){

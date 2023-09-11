@@ -18,10 +18,10 @@ public:
 
 public slots:
     void addNewResArea(RestrictedArea* restrictedArea);
-    void addNewResArea(QPointF point, int radius);
+    void addNewResArea(QPointF point, QPointF radiusX, QPointF radiusY);
 
 signals:
-    void newResArea(QPointF point, int radius);
+    void newResArea(QPointF point, QPointF radiusX, QPointF radiusY);
 
 private:
     QList<RestrictedArea*> _resAreaList;

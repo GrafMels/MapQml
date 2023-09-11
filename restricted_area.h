@@ -13,11 +13,12 @@ public:
     Q_INVOKABLE void setRestArea(QPointF &restArea);
 
 public slots:
-    void receiveArea(QPointF restArea, int radius);
+    void receiveArea(QPointF restArea, QPointF radiusX, QPointF radiusY);
 
 private:
     QPointF _restArea;
-    int radius;
+    QPointF radiusX;
+    QPointF radiusY;
     int id;
 };
 

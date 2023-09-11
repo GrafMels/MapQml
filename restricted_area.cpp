@@ -15,9 +15,10 @@ void RestrictedArea::setRestArea(QPointF &restArea){
     this->_restArea = restArea;
 }
 
-void RestrictedArea::receiveArea(QPointF restArea, int radius){
+void RestrictedArea::receiveArea(QPointF restArea, QPointF radiusX, QPointF radiusY){
     this->_restArea = restArea;
-    this->radius = radius;
+    this->radiusX = radiusX;
+    this->radiusY = radiusY;
 }
 
 

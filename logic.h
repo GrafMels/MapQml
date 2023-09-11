@@ -17,21 +17,23 @@ public:
     void buildARoute();
     void heapify(QList<QLineF> line, int n, int i);
     void sort(QList<QLineF> line);
+    bool circle(QRectF rect, QPointF pt1, QPointF pt2);
+    const double calcRadius(const QPointF restArea, const QPointF radiusX, const QPointF radiusY, const double angle);
 
 public slots:
     void addBaseLine(QLineF line);
-    void addRestrictedArea(QPointF point, const int radius);
+    void addRestrictedArea(QPointF point, QPointF radiusX, QPointF radiusY);
 
 signals:
     void getMapLine(double x1, double y1, double x2, double y2);
+    void printPoint(double x, double y);
 
 private:
     LineFList baseLine;
     LineFList mainLines;
-    LineFList mainWayTemp;
-    LineFList tempLines;
     QList<QPointF> restrictedList;
-    QList<int> radiusList;
+    QList<QPointF> radiusListX;
+    QList<QPointF> radiusListY;
 };
 
 #endif // LOGIC_H

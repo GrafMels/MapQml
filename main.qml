@@ -37,9 +37,9 @@ Window {
             Map{
                 id: map
                 plugin: Plugin {name: "osm"}
-                center: QtPositioning.coordinate(59.95, 30.5)
+                center: QtPositioning.coordinate(59.9386, 30.3141)
                 anchors.fill: parent
-                zoomLevel: 8
+                zoomLevel: 10
 
                 MapPolyline{
                     id: girosPath
@@ -54,7 +54,7 @@ Window {
 
                 MapCircle {
                     id: circleEnd
-                    radius: 200.0
+                    radius: 200
                     color: 'green'
                 }
 
@@ -222,8 +222,6 @@ Window {
     }
 
     function leftClickOnMap(latitude, longitude){
-
-        console.log("Start: " + coordinate1.latitude + " " + coordinate1.longitude)
         circleStart.center.latitude = latitude
         circleStart.center.longitude = longitude
 
@@ -232,8 +230,6 @@ Window {
     }
 
     function rightClickOnMap(latitude, longitude){
-
-        console.log("End: " + coordinate2.latitude + " " + coordinate2.longitude)
         circleEnd.center.latitude = latitude
         circleEnd.center.longitude = longitude
 
@@ -242,7 +238,6 @@ Window {
     }
 
     function midleClickOnMap(latitude, longitude){
-        restrictedAreaList.addNewResArea(Qt.point(latitude, longitude), textRadiusRestrictedArea.text)
         var component = Qt.createComponent("RestrictedArea.qml")
         var item = null;
         if(component.status === Component.Ready){
@@ -254,6 +249,10 @@ Window {
         }else{
             console.log(component.errorString());
         }
+
+        var coordinateCircleX = QtPositioning.coordinate(latitude, longitude).atDistanceAndAzimuth(textRadiusRestrictedArea.text, 0)
+        var coordinateCircleY = QtPositioning.coordinate(latitude, longitude).atDistanceAndAzimuth(textRadiusRestrictedArea.text, 90)
+        restrictedAreaList.addNewResArea(Qt.point(latitude, longitude), Qt.point(coordinateCircleX.latitude, coordinateCircleX.longitude), Qt.point(coordinateCircleY.latitude, coordinateCircleY.longitude))
     }
 
     function addNewArea(poin, radius){
@@ -262,46 +261,67 @@ Window {
 
     function addMapLine(latitudeStart, longitudeStart, latitudeEnd, longitudeEnd){
         var component = Qt.createComponent("Point.qml")
-        var item = null;
+        var item1 = null;
+        var item2 = null;
+        var item3 = null;
         if(component.status === Component.Ready){
-            item = component.createObject(map);
-            item.center.latitude = latitudeStart
-            item.center.longitude = longitudeStart
-            item.radius = 200
-            map.addMapItem(item)
+            item1 = component.createObject(map);
+            item1.center.latitude = latitudeStart
+            item1.center.longitude = longitudeStart
+            item1.radius = 500
+            map.addMapItem(item1)
         }else{
             console.log(component.errorString());
         }
 
         component = Qt.createComponent("Point.qml")
-        item = null;
         if(component.status === Component.Ready){
-            item = component.createObject(map);
-            item.center.latitude = latitudeEnd
-            item.center.longitude = longitudeEnd
-            item.radius = 200
-            map.addMapItem(item)
+            item2 = component.createObject(map);
+            item2.center.latitude = latitudeEnd
+            item2.center.longitude = longitudeEnd
+            item2.radius = 500
+            map.addMapItem(item2)
         }else{
             console.log(component.errorString());
         }
 
         component = Qt.createComponent("Line.qml")
-        item = null;
+        if(component.status === Component.Ready){
+            item3 = component.createObject(map);
+            item3.path = [{latitude: latitudeStart, longitude: longitudeStart}, {latitude: latitudeEnd, longitude: longitudeEnd}]
+            item3.line.width = 2
+            map.addMapItem(item3)
+        }else{
+            console.log(component.errorString());
+        }
+    }
+
+    function addPoint(latitude, longitude){
+        var component = Qt.createComponent("Point.qml")
+        var item = null;
         if(component.status === Component.Ready){
             item = component.createObject(map);
-            item.path[0].latitude = latitudeStart
-            item.path[0].latitude = longitudeStart
-            item.path[1].latitude = latitudeEnd
-            item.path[1].latitude = longitudeEnd
+            item.center.latitude = latitude
+            item.center.longitude = longitude
+            item.radius = 200
+            item.color = "purple"
             map.addMapItem(item)
         }else{
             console.log(component.errorString());
         }
     }
+
     Connections{
         target: logic
         onGetMapLine: {
-            addMapLine(latitudeStart, longitudeStart, latitudeEnd, longitudeEnd)
+            addMapLine(x1, y1, x2, y2)
+        }
+    }
+
+    Connections{
+        target: logic
+        onPrintPoint: {
+            addPoint(x, y)
         }
     }
 }

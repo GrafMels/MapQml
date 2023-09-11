@@ -27,10 +27,10 @@ void RestrictedAreaList::addNewResArea(RestrictedArea* restrictedArea){
     this->_resAreaList.append(restrictedArea);
 }
 
-void RestrictedAreaList::addNewResArea(QPointF point, int radius){
+void RestrictedAreaList::addNewResArea(QPointF point, QPointF radiusX, QPointF radiusY){
     RestrictedArea *newRestrictedArea = new RestrictedArea;
-    newRestrictedArea->receiveArea(point, radius);
+    newRestrictedArea->receiveArea(point, radiusX, radiusY);
     this->_resAreaList.append(newRestrictedArea);
 
-    emit newResArea(point, radius);
+    emit newResArea(point, radiusX, radiusY);
 }

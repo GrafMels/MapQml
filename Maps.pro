@@ -6,7 +6,6 @@ QT += quick quickwidgets positioning core
 CONFIG += c++17
 
 SOURCES += \
-        PathController.cpp \
         line_f_list.cpp \
         logic.cpp \
         main.cpp \

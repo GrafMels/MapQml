@@ -12,6 +12,7 @@ public:
     QList<QLineF*> lineList();
     Q_INVOKABLE void setLineList(QList<QLineF*> restArea);
     QLineF* getLastLineList();
+    QLineF* getFirstLineList();
     void clearList();
 
 

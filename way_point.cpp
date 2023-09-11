@@ -6,10 +6,7 @@ QPointF _point;
 WayPoint::WayPoint(QObject *parent)
     : QObject{parent}
 {
-    connect(this, SIGNAL(pointStartExist()), this, SLOT(pointStartChanged()));
-    connect(this, SIGNAL(pointEndExist()), this, SLOT(pointEndChanged()));
-    connect(this, SIGNAL(pointChanged()), this, SLOT(pointStartChanged()));
-    connect(this, SIGNAL(pointChanged()), this, SLOT(pointEndChanged()));
+
 }
 
 const double WayPoint::pointXStart(){;

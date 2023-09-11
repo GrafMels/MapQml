@@ -1,6 +1,7 @@
 #include "logic.h"
-#include "PathController.cpp"
 #include <iostream>
+#include <math.h>
+#include <QLineF>
 
 Logic::Logic(QObject *parent)
     : QObject{parent}
@@ -8,92 +9,172 @@ Logic::Logic(QObject *parent)
 }
 
 void Logic::buildARoute(){
-    if(!restrictedList.isEmpty()){
-        double xA;
-        double xB;
-        double xC;
-        double yA;
-        double yB;
-        double yC;
-        QList<QLineF> lineList1;
-        QList<QLineF> lineList2;
-        QList<QLineF> lineList3;
-        QList<QLineF> lineList4;
-        bool isIntersection = false;
-        for(int i=0; i < restrictedList.length(); i++){
-            QLineF *co_Directional =  new QLineF(baseLine.getLastLineList()->toLine());
-            xA = co_Directional->x1();
-            xB = co_Directional->x2();
-            xC = restrictedList.at(i).x();
-            yA = co_Directional->y1();
-            yB = co_Directional->y2();
-            yC = restrictedList.at(i).y();
+    restrictedList.append(restrictedList.at(restrictedList.length()-1));
+    mainLines.addNewLine(baseLine.getFirstLineList());
+    QList<QPointF> tempRestList = QList<QPointF>(restrictedList);
+        bool isOpen = true;
+        while (isOpen) {
+            double mainAngle = 0;
+            QLineF smallest = QLineF(tempRestList.at(0), mainLines.getLastLineList()->p1());
+            double radius = 0.0;
+            double radiusX = 0.0;
+            double radiusY = 0.0;
+            int count = 0;
+            QLineF lenghtLine;
 
-            xA = xA + (xC - xB);
-            yA = yA + (yC - yB);
-            xB = xC;
-            yB = yC;
+            mainAngle = mainLines.getLastLineList()->angle();
 
-            QLineF* line = new QLineF(xA, yA, xB, yB);
-            QLineF vector1 = line->normalVector();
-            QLineF vector2 = line->normalVector();
-            vector1.setLength(radiusList.at(i) * 0.00004);
-            vector2.setLength(radiusList.at(i) * 0.00004);
-            vector2.setAngle(180);
-            lineList1.append(vector1);
-            lineList2.append(vector2);
-            QPointF intersectionPoint;
-            if (co_Directional->intersects(vector1, &intersectionPoint) != QLineF::NoIntersection){
-                isIntersection = true;
-            }
-        }
-        int count = lineList1.length();
-        if(isIntersection){
-            QPointF point1 = *new QPointF(baseLine.getLastLineList()->p1());
-            for (int i = 0; i < count; ++i) {
-                QLineF smallest = *new QLineF;
-                int count = 0;
-                for(int j = 0; j < count; j++){
-                    QPointF point2 = *new QPointF(lineList1.at(j).p1());
-                    QLineF lenghtLine = *new QLineF(point1, point2);
-                    if(smallest.length() < lenghtLine.length()){
-                        smallest = lenghtLine;
-                        count = j;
-                    }
+            for(int j = 0; j < tempRestList.length(); j++){//нахождение наименьшего элемента пузырьком
+                lenghtLine = QLineF(tempRestList.at(j), mainLines.getLastLineList()->p1());
+                if(smallest.length() > lenghtLine.length()){
+                    smallest = lenghtLine;
+                    count = j;
                 }
-                lineList3.append(lineList1.at(count));
-                lineList1.removeAt(count);
-                lineList4.append(lineList2.at(count));
-                lineList2.removeAt(count);
             }
-        }
-        QPointF point = baseLine.getLastLineList()->p1();
-        QLineF endLine = *baseLine.getLastLineList();
-        for(int i = 0; i < lineList4.length(); i++){
-            QPointF *intersectionPoint = new QPointF;
-            QPointF tempPoint;
-            if(endLine.intersects(lineList4.at(i), intersectionPoint) == 2){
-                tempPoint = lineList4.at(i).p2();
-                mainLines.addNewLine(point, lineList4.at(i).p2());
-            }else if(endLine.intersects(lineList3.at(i), intersectionPoint) == 2){
-                tempPoint = lineList3.at(i).p2();
-                mainLines.addNewLine(point, lineList3.at(i).p2());
+
+            double closestPointAngle = (QLineF(tempRestList.at(count), mainLines.getLastLineList()->p2())).angle();//определение ближайщей точки на элепсе к начальной точки пути
+            radius = calcRadius(tempRestList.at(count), tempRestList.at(count), radiusListY.at(count), closestPointAngle);
+            radiusX = abs(tempRestList.at(count).x() - radiusListX.at(count).x());
+            QLineF tempClosestLine = QLineF();
+            tempClosestLine.setP1(tempRestList.at(count));
+            tempClosestLine.setLength(radiusX);
+            tempClosestLine.setAngle(closestPointAngle);
+
+            double newPerpendicular1 = 0;
+            double newPerpendicular2 = 0;
+            if(mainAngle<90){
+                newPerpendicular1 = mainAngle + 90;
+                newPerpendicular2 = mainAngle + 270;
+            }else if(mainAngle>=270){
+                newPerpendicular1 = mainAngle - 90;
+                newPerpendicular2 = mainAngle - 270;
             }else{
+                newPerpendicular1 = mainAngle + 90;
+                newPerpendicular2 = mainAngle - 90;
+            }
+
+            radius = calcRadius(tempRestList.at(count), radiusListX.at(count), radiusListY.at(count), newPerpendicular1);
+            radiusX = abs(tempRestList.at(count).x() - radiusListX.at(count).x());
+            radiusY = abs(tempRestList.at(count).y() - radiusListY.at(count).y());
+
+            QLineF line1 = QLineF();
+            QLineF line2 = QLineF();
+
+            line1.setP1(tempRestList.at(count));
+            line2.setP1(tempRestList.at(count));
+            line1.setLength(radius + radius*0.4);
+            line2.setLength(radius + radius*0.4);
+            line1.setAngle(newPerpendicular1);
+            line2.setAngle(newPerpendicular2);
+
+            QPointF pointEnd;
+            if(QLineF(mainLines.getLastLineList()->p1(), line1.p2()).length() < QLineF(mainLines.getLastLineList()->p1(), line2.p2()).length()){
+                pointEnd = line1.p2();
+            }else{
+                pointEnd = line2.p2();
+            }
+
+            QPointF leftTopPoint = QPointF(tempRestList.at(count).x() + radiusX, tempRestList.at(count).y() - radiusY);//определение прямоугольника элипса для функции circle
+            QPointF bottomRightPoint = QPointF(tempRestList.at(count).x() - radiusX, tempRestList.at(count).y() + radiusY);
+
+            if(circle(QRectF(leftTopPoint, bottomRightPoint), mainLines.getLastLineList()->p1(), mainLines.getLastLineList()->p2())){//Добавление линии в список линий
+                if(mainLines.lineList().length() == 1){
+                    mainLines.addNewLine(mainLines.getLastLineList()->p1(), pointEnd);
+                }else{
+                    mainLines.addNewLine(mainLines.getLastLineList()->p2(), pointEnd);
+                }
 
             }
-            point = tempPoint;
-            endLine.setP1(point);
-        }
 
-        for (int i = 0; i < mainLines.lineList().length(); i++) {
-            std::cout << "MainLines: " << mainLines.lineList().at(i)->x1() << " " << mainLines.lineList().at(i)->y1() << " " << mainLines.lineList().at(i)->x2() << " " << mainLines.lineList().at(i)->y2() << " " <<std::endl;
-            QPointF pointStart = mainLines.lineList().at(i)->p1();
-            QPointF pointEnd = mainLines.lineList().at(i)->p2();
-
-            emit getMapLine(pointStart.x(), pointStart.y(), pointEnd.x(), pointEnd.y());
+            if(tempRestList.length() != 1){
+                tempRestList.removeAt(count);
+            }else{
+                isOpen = false;
+            }
         }
-        mainLines.clearList();
-    };
+        mainLines.addNewLine(mainLines.getLastLineList()->p2(), mainLines.getFirstLineList()->p2());
+        for (int i = 1; i < mainLines.lineList().length()-2; i++) {
+            emit getMapLine(mainLines.lineList().at(i)->x1(), mainLines.lineList().at(i)->y1(), mainLines.lineList().at(i)->x2(), mainLines.lineList().at(i)->y2());
+        }
+}
+
+
+bool Logic::circle(QRectF rect, QPointF pt1, QPointF pt2){ // Логика для вычисления пересечения с элипсом
+    double _a = rect.width() / 2.0;
+    double _b = rect.height() / 2.0;
+    double x0 = rect.x() + rect.width() /2.0;
+    double y0 = rect.y() + rect.height() /2.0;
+
+    double k = (pt2.y() - pt1.y()) / (double)(pt2.x() - pt1.x());
+    double b = pt1.y() - k * pt1.x();
+
+    double v = (_a*_a)*(_b*_b);
+    double s = b - y0;
+
+    double A = -1;
+    double B = -1;
+    double C = -1;
+    if(pt2.x() - pt1.x() != 0) {
+        A = (_b * _b) + (_a * _a) * (k * k);
+        B = 2 * ((_a * _a) * k * s - (_b * _b) * x0);
+        C = (_b * _b) * (x0 * x0) + (_a * _a) * (s * s) - v;
+    }else{
+        double w = (1 - (((pt1.x() - x0, 2)*(pt1.x() - x0), 2) / (_a*_a))) * (_b*_b);
+        A = 1;
+        B = -2 * y0;
+        C = (y0 * y0) - w;
+    }
+    double D = (B * B) - 4*A*C;
+    if(pt2.x() - pt1.x() != 0) {
+        if (D < 0) {
+            return false;
+        } else if (D == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }else{
+        if (D < 0) {
+            return false;
+        } else if (D == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
+
+const double Logic::calcRadius(const QPointF restArea, const QPointF radiusXX, const QPointF radiusYY, double angle){
+    double diffX = 0;
+    double diffY = 0;
+    double angleX = 0;
+    double angleY = 0;
+    double radiusInPoint = 0;
+    diffX = abs(restArea.x() - radiusXX.x());
+    diffY = abs(restArea.y() - radiusYY.y());
+    if(angle < 90){
+        angleX = angle/90;
+        angleY = (90 - angle)/90;
+        radiusInPoint = diffX*angleY + diffY*angleX;
+
+    }else if(angle < 180){
+        angle -= 90;
+        angleY = angle/90;
+        angleX = (90 - angle)/90;
+        radiusInPoint = diffX*angleY + diffY*angleX;
+    }else if(angle < 270){
+        angle -= 180;
+        angleX = angle/90;
+        angleY = (90 - angle)/90;
+        radiusInPoint = diffX*angleY + diffY*angleX;
+    }else{
+        angle -= 270;
+        angleY = angle/90;
+        angleX = (90 - angle)/90;
+        radiusInPoint = diffX*angleY + diffY*angleX;
+    }
+
+    return radiusInPoint;
 }
 
 void Logic::addBaseLine(QLineF line){
@@ -101,8 +182,8 @@ void Logic::addBaseLine(QLineF line){
     buildARoute();
 }
 
-void Logic::addRestrictedArea(QPointF point, const int radius){
-    std::cout << "RectArea" << point.x() << " : " << point.y() << std::endl;
+void Logic::addRestrictedArea(QPointF point, QPointF radiusX, QPointF radiusY){
     restrictedList.append(point);
-    radiusList.append(radius);
+    radiusListX.append(radiusX);
+    radiusListY.append(radiusY);
 }

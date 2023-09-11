@@ -35,10 +35,10 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
 
-    QObject::connect(&logic, SIGNAL(getMapLine(double,double,double,double)), &logic, SLOT(onGeopathChanged(double,double,double,double)));
     QObject::connect(&wayPoint, SIGNAL(lineReady(QLineF)), &logic, SLOT(addBaseLine(QLineF)));
-    QObject::connect(&restrictedAreaList, SIGNAL(newResArea(QPointF, int)), &logic, SLOT(addRestrictedArea(QPointF, int)));
+    QObject::connect(&restrictedAreaList, SIGNAL(newResArea(QPointF, QPointF, QPointF)), &logic, SLOT(addRestrictedArea(QPointF, QPointF, QPointF)));
 
+    engine.rootContext()->setContextProperty("logic", &logic);
     engine.rootContext()->setContextProperty("wayPoint", &wayPoint);
     engine.rootContext()->setContextProperty("restrictedAreaList", &restrictedAreaList);
     engine.load(url);
