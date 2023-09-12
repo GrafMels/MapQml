@@ -9,6 +9,7 @@ Logic::Logic(QObject *parent)
 }
 
 void Logic::buildARoute(){
+
     restrictedList.append(restrictedList.at(restrictedList.length()-1));
     mainLines.addNewLine(baseLine.getFirstLineList());
     QList<QPointF> tempRestList = QList<QPointF>(restrictedList);
