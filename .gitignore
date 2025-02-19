@@ -1,0 +1,12 @@
+*build*/
+.idea/
+logs*/
+*.user
+*.autosave
+moc_*
+ui_*
+CMakeUserPresets.json
+*.o
+*.moc
+*.prl
+CMakeLists.txt.*

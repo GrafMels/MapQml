@@ -1,6 +1,7 @@
 #include "restricted_area_list.h"
 #include "restricted_area.h"
 #include <iostream>
+#include <QPointF>
 
 RestrictedAreaList::RestrictedAreaList(QObject *parent)
     : QObject{parent}

@@ -2,6 +2,7 @@
 #define RESTRICTED_AREA_H
 
 #include <QObject>
+#include <QPointF>
 
 class RestrictedArea : public QObject
 {
